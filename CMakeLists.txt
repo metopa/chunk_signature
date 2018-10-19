@@ -3,4 +3,4 @@ project(veeam)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(veeam main.cpp)
+add_subdirectory(src)
