@@ -4,28 +4,13 @@
 #include <map>
 #include <regex>
 
+#define BOOST_SPIRIT_USE_PHOENIX_V3 1
+#include <boost/format.hpp>
 #include <boost/program_options.hpp>
 #include <boost/spirit/include/qi.hpp>
 
-
-namespace po = boost::program_options;
-namespace qi = boost::spirit::qi;
-
-class SizeStringToNumError : public std::runtime_error {
-public:
-	SizeStringToNumError(const std::string& size_str,
-						 const std::string& parameter_name) :
-			std::runtime_error(
-					parameter_name +
-					": unknown parameter format. "
-					"Expected format: <number> <one of {b, kb, mb, gb}>. "
-					"Got: " +
-					size_str) {}
-};
-
-size_t sizeLiteralToNum(std::string size_literal,
-						const std::string& parameter_name) {
-	static std::map <std::string, size_t> LITERAL2MULTIPLIER{
+size_t sizeLiteralToNum(std::string size_literal) {
+	static std::map<std::string, size_t> LITERAL2MULTIPLIER{
 			{"",  1},
 			{"k", 1 << 10},
 			{"m", 1 << 20},
@@ -41,21 +26,28 @@ size_t sizeLiteralToNum(std::string size_literal,
 
 	auto it = LITERAL2MULTIPLIER.find(size_literal);
 	if (it == end(LITERAL2MULTIPLIER)) {
-		throw SizeStringToNumError(size_literal, parameter_name);
+		throw std::runtime_error("can't decode size literal: "
+								 "expected one of {b, kb, mb, gb}, "
+								 "got: " + size_literal);
 	}
 
 	return it->second;
 
 }
 
-size_t sizeStringToNum(const std::string& size_str,
-					   const std::string& parameter_name) {
+size_t sizeStringToNum(const std::string& size_str) {
+	namespace qi = boost::spirit::qi;
+	namespace ph = boost::phoenix;
+
 	size_t int_val = 0;
 	double double_val = 0;
 	std::string literal;
 
-	auto exact_parser = qi::ulong_long[std::ref(int_val) = qi::_1] >> -qi::string;
-	auto float_parser = qi::double_ >> -qi::string;
+	// First try to decode an exact integral number
+	// to avoid float point error
+	auto exact_parser =
+			qi::ulong_long[ph::ref(int_val) = qi::_1]
+					>> -qi::string[ph::ref(literal) = qi::_1];
 
 	auto b = begin(size_str);
 	auto e = end(size_str);
@@ -64,51 +56,34 @@ size_t sizeStringToNum(const std::string& size_str,
 									boost::spirit::ascii::space);
 
 	if (b == e && success) {
-
+		return int_val * sizeLiteralToNum(literal);
 	}
 
+	// Try to decode a real number, we don't care about rounding
+	auto float_parser =
+			qi::double_[ph::ref(double_val) = qi::_1]
+					>> -qi::string[ph::ref(literal) = qi::_1];
 
+	b = begin(size_str);
+	e = end(size_str);
 
+	success = qi::phrase_parse(b, e, float_parser,
+							   boost::spirit::ascii::space);
 
-	// split to <number> <literal>
-	static std::regex split_regex(R"((\d+(?:\.\d*)?)\s*(\w*))");
-	std::cmatch match;
-	if (!std::regex_match(size_str, match, split_regex)) {
-		throw SizeStringToNumError(size_str, parameter_name);
-	}
-
-
-	auto literal_str = match[2].str();
-	std::transform(begin(literal_str), end(literal_str),
-				   begin(literal_str), tolower);
-
-	if (!literal_str.empty() && literal_str.back() == 'b') {
-		literal_str.pop_back();
-	}
-
-	auto it = LITERAL2MULTIPLIER.find(literal_str);
-	if (it == end(LITERAL2MULTIPLIER)) {
-		throw SizeStringToNumError(size_str, parameter_name);
-	}
-
-	size_t multiplier = it->second;
-
-	auto num_str = match[1].str();
-
-	if (num_str.find('.') == std::string::npos) {
-		// precise mode
-		size_t num;
-
-		return num * multiplier;
+	if (b == e && success && double_val >= 0) {
+		return round(double_val * sizeLiteralToNum(literal));
 	} else {
-		// rounding mode
-		auto num = std::atof(num_str.c_str());
+		throw std::runtime_error(
+				"can't decode size: "
+				"expected format: <number> <one of {b, kb, mb, gb}>, "
+				"got: " + size_str);
 	}
-
 
 }
 
 ProgramConfig ProgramConfig::fromCommandLine(int argc, char** argv) {
+	namespace po = boost::program_options;
+
 	po::options_description desc("Allowed options");
 
 	ProgramConfig config;
@@ -137,6 +112,19 @@ ProgramConfig ProgramConfig::fromCommandLine(int argc, char** argv) {
 
 	po::notify(vm);
 
+	try {
+		config.chunk_size = sizeStringToNum(chunk_str);
+		if (config.chunk_size == 0) {
+			throw std::runtime_error("--chunk-size: chunk size must be positive");
+		}
+	} catch (std::runtime_error& e) {
+		throw std::runtime_error("--chunk-size: " + std::string(e.what()));
+	}
 
 	return config;
+}
+
+std::ostream& operator<<(std::ostream& out, const ProgramConfig& config) {
+	return out << boost::format("Config{chunk_size=%1%, input=%2%, output=%3%}") %
+				  config.chunk_size % config.input_file % config.output_file;
 }
