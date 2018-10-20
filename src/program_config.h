@@ -3,15 +3,25 @@
 
 #include <string>
 
+
 struct ProgramConfig {
 	static ProgramConfig fromCommandLine(int argc, char* argv[]);
 
 	std::string input_file;
 	std::string output_file;
-	size_t chunk_size;
+	uint64_t chunk_size;
 };
 
+
 std::ostream& operator<<(std::ostream& out, const ProgramConfig& config);
+
+uint64_t sizeLiteralToNum(std::string size_literal);
+
+uint64_t exactSizeStringToNum(const std::string& size_str);
+
+uint64_t floatSizeStringToNum(const std::string& size_str);
+
+uint64_t sizeStringToNum(const std::string& size_str);
 
 
 #endif //VEEAM_PROGRAM_CONFIG_H

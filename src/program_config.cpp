@@ -4,13 +4,13 @@
 #include <map>
 #include <regex>
 
-#define BOOST_SPIRIT_USE_PHOENIX_V3 1
 #include <boost/format.hpp>
+#include <boost/phoenix/core.hpp>
 #include <boost/program_options.hpp>
 #include <boost/spirit/include/qi.hpp>
 
-size_t sizeLiteralToNum(std::string size_literal) {
-	static std::map<std::string, size_t> LITERAL2MULTIPLIER{
+uint64_t sizeLiteralToNum(std::string size_literal) {
+	static std::map<std::string, uint64_t> LITERAL2MULTIPLIER{
 			{"",  1},
 			{"k", 1 << 10},
 			{"m", 1 << 20},
@@ -35,50 +35,72 @@ size_t sizeLiteralToNum(std::string size_literal) {
 
 }
 
-size_t sizeStringToNum(const std::string& size_str) {
+uint64_t exactSizeStringToNum(const std::string& size_str) {
 	namespace qi = boost::spirit::qi;
 	namespace ph = boost::phoenix;
 
-	size_t int_val = 0;
-	double double_val = 0;
+	uint64_t val = 0;
 	std::string literal;
 
-	// First try to decode an exact integral number
-	// to avoid float point error
-	auto exact_parser =
-			qi::ulong_long[ph::ref(int_val) = qi::_1]
-					>> -qi::string[ph::ref(literal) = qi::_1];
+	auto assign_val = [&](auto a) { val = a; };
+	auto append_literal = [&](auto a) { literal.push_back(a); };
 
+	auto parser = qi::ulong_long[assign_val] >> *qi::alpha[append_literal];
 	auto b = begin(size_str);
 	auto e = end(size_str);
 
-	bool success = qi::phrase_parse(b, e, exact_parser,
+	bool success = qi::phrase_parse(b, e, parser,
 									boost::spirit::ascii::space);
 
 	if (b == e && success) {
-		return int_val * sizeLiteralToNum(literal);
+		return val * sizeLiteralToNum(literal);
 	}
 
-	// Try to decode a real number, we don't care about rounding
-	auto float_parser =
-			qi::double_[ph::ref(double_val) = qi::_1]
-					>> -qi::string[ph::ref(literal) = qi::_1];
+	throw std::runtime_error(
+			"can't decode size: "
+			"expected format: <number> <one of {b, kb, mb, gb}>, "
+			"got: " + size_str);
+}
 
-	b = begin(size_str);
-	e = end(size_str);
+uint64_t floatSizeStringToNum(const std::string& size_str) {
+	namespace qi = boost::spirit::qi;
+	namespace ph = boost::phoenix;
 
-	success = qi::phrase_parse(b, e, float_parser,
-							   boost::spirit::ascii::space);
+	double val = 0;
+	std::string literal;
 
-	if (b == e && success && double_val >= 0) {
-		return round(double_val * sizeLiteralToNum(literal));
-	} else {
-		throw std::runtime_error(
-				"can't decode size: "
-				"expected format: <number> <one of {b, kb, mb, gb}>, "
-				"got: " + size_str);
+	auto assign_val = [&](auto a) { val = a; };
+	auto append_literal = [&](auto a) { literal.push_back(a); };
+
+	auto parser = qi::double_[assign_val] >> *qi::alpha[append_literal];
+	auto b = begin(size_str);
+	auto e = end(size_str);
+
+	bool success = qi::phrase_parse(b, e, parser,
+									boost::spirit::ascii::space);
+
+	if (b == e && success) {
+		if (val < 0) {
+			throw std::runtime_error("can't decode size: negative number");
+		}
+		return size_t(round(val * sizeLiteralToNum(literal)));
 	}
 
+	throw std::runtime_error(
+			"can't decode size: "
+			"expected format: <number> <one of {b, kb, mb, gb}>, "
+			"got: " + size_str);
+}
+
+
+uint64_t sizeStringToNum(const std::string& size_str) {
+	try {
+		// First try to decode an exact integral number to avoid floating point error
+		return exactSizeStringToNum(size_str);
+	} catch (std::runtime_error&) {
+		// Try to decode a real number, we don't care about rounding
+		return floatSizeStringToNum(size_str);
+	}
 }
 
 ProgramConfig ProgramConfig::fromCommandLine(int argc, char** argv) {
@@ -114,11 +136,12 @@ ProgramConfig ProgramConfig::fromCommandLine(int argc, char** argv) {
 
 	try {
 		config.chunk_size = sizeStringToNum(chunk_str);
-		if (config.chunk_size == 0) {
-			throw std::runtime_error("--chunk-size: chunk size must be positive");
-		}
 	} catch (std::runtime_error& e) {
 		throw std::runtime_error("--chunk-size: " + std::string(e.what()));
+	}
+
+	if (config.chunk_size == 0) {
+		throw std::runtime_error("--chunk-size: chunk size must be positive");
 	}
 
 	return config;
