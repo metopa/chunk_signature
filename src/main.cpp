@@ -1,8 +1,5 @@
 #include <iostream>
 
-#include <boost/program_options.hpp>
-
-namespace po = boost::program_options;
 
 int main(int argc, char* argv[]) {
 	po::options_description desc("Allowed options");
@@ -14,21 +11,7 @@ int main(int argc, char* argv[]) {
 			("output,o", po::value<std::string>()->required(), "output file");
 
 
-	po::variables_map vm;
 
-	try {
-		po::store(po::parse_command_line(argc, argv, desc), vm);
-
-		if (vm.count("help")) {
-			std::cout << desc << "\n";
-			return 1;
-		}
-
-		po::notify(vm);
-	} catch (po::error& e) {
-		std::cout << e.what() << "\n";
-		return 1;
-	}
 
 
 
