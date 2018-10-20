@@ -114,13 +114,16 @@ ProgramConfig ProgramConfig::fromCommandLine(int argc, char** argv) {
 	desc.add_options()
 			("help,h", "produce help message")
 			("chunk-size,s",
-			 po::value<std::string>(&chunk_str)->default_value("1m"),
+			 po::value(&chunk_str)->default_value("1m"),
 			 "set chunk size")
+			("workers,j",
+			 po::value(&config.thread_count)->default_value(0),
+			 "set worker count, default: number of HW cores")
 			("input,i",
-			 po::value<std::string>(&config.input_file)->required(),
+			 po::value(&config.input_file)->required(),
 			 "input file")
 			("output,o",
-			 po::value<std::string>(&config.output_file)->required(),
+			 po::value(&config.output_file)->required(),
 			 "output file");
 
 	po::variables_map vm;

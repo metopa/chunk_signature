@@ -12,7 +12,10 @@ find_package(GTest REQUIRED)
 
 add_executable(veeam_calculate_checksum
         src/main.cpp
-        src/program_config.cpp)
+        src/program_config.cpp
+        src/base_hasher.cpp
+        src/md5_hasher.cpp
+        src/crc32_hasher.cpp)
 target_link_libraries(veeam_calculate_checksum ${Boost_LIBRARIES})
 
 add_executable(veeam_calculate_checksum_tests

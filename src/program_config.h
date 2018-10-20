@@ -10,6 +10,7 @@ struct ProgramConfig {
 	std::string input_file;
 	std::string output_file;
 	uint64_t chunk_size;
+	unsigned thread_count;
 };
 
 
