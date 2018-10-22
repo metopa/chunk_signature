@@ -6,7 +6,8 @@
 #include <memory>
 #include <vector>
 
-#include "../../src/common.h"
+
+using hash_result_t = std::vector<uint8_t>;
 
 class BaseHasher {
 public:

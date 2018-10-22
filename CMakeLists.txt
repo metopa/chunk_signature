@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 project(veeam_signature)
 
 set(CMAKE_CXX_STANDARD 14)
-set (CMAKE_CXX_FLAGS_RELEASE -g)
+
 # external dependencies
 find_package(Boost COMPONENTS program_options iostreams REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})

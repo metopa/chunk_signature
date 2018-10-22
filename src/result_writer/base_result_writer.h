@@ -2,7 +2,7 @@
 #define VEEAM_BASE_RESULT_WRITER_H
 
 
-#include "../common.h"
+#include "hasher/base_hasher.h"
 
 /**
  * Base class for printing calculated hashes to an output file in random order.
