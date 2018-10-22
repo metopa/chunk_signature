@@ -3,7 +3,7 @@ project(veeam_signature)
 
 set(CMAKE_CXX_STANDARD 14)
 
-# External dependencies
+# external dependencies
 find_package(Boost COMPONENTS program_options iostreams REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
@@ -11,6 +11,8 @@ find_package(GTest REQUIRED)
 
 find_package(OpenSSL)
 
+
+# hasher library
 include_directories(include)
 
 set(HASHER_SRC
@@ -29,11 +31,20 @@ else (OpenSSL_FOUND)
 endif (OpenSSL_FOUND)
 
 add_library(hasher ${HASHER_SRC})
-SET(hasher_LIBRARY -Wl,--whole-archive hasher -Wl,--no-whole-archive)
 if (OpenSSL_FOUND)
     target_link_libraries(hasher OpenSSL::SSL)
 endif (OpenSSL_FOUND)
 
+# enable static factory registration
+# without this hack register functions wouldn't be included in an executable
+if (MSVC)
+    SET(hasher_LIBRARY hasher /WHOLEARCHIVE:hasher)
+else ()
+    SET(hasher_LIBRARY -Wl,--whole-archive hasher -Wl,--no-whole-archive)
+endif ()
+
+
+# main executable
 add_executable(signature
         src/main.cpp
         src/program_config.cpp
@@ -43,6 +54,7 @@ add_executable(signature
         )
 target_link_libraries(signature ${Boost_LIBRARIES} ${hasher_LIBRARY})
 
+# tests
 add_executable(signature_test
         test/program_config_test.cpp
         src/program_config.cpp)
