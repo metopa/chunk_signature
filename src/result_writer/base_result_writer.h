@@ -5,14 +5,15 @@
 #include "../common.h"
 
 class BaseResultWriter {
+	/**
+	 * Base class for printing calculated hashes to an output file in random order.
+	 */
 public:
 	BaseResultWriter(size_t hash_count, size_t hash_length) :
 		hash_count_(hash_count), hash_length_(hash_length) {}
 	virtual ~BaseResultWriter() = default;
 
 	void writeResult(const hash_result_t& hash, size_t index) const;
-
-	virtual void finalize() {}
 
 protected:
 	virtual void doWriteResult(const hash_result_t& hash, size_t index) const = 0;
