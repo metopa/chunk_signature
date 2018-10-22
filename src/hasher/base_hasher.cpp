@@ -16,7 +16,7 @@ std::map<std::string, std::function<BaseHasher::ptr_t()>> BACKENDS = {
 std::vector<std::string> BaseHasher::getSupportedBackends() {
 	std::vector<std::string> names;
 	transform(begin(BACKENDS), end(BACKENDS), back_inserter(names),
-			  [](auto x) { return x.second; });
+			  [](auto x) { return x.first; });
 	return names;
 }
 

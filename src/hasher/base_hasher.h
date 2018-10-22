@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 
-#include "common.h"
+#include "../common.h"
 
 class BaseHasher {
 public:

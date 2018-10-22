@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 set(CMAKE_CXX_STANDARD 14)
 
-find_package(Boost COMPONENTS program_options REQUIRED)
+find_package(Boost COMPONENTS program_options iostreams REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 find_package(GTest REQUIRED)
@@ -13,9 +13,11 @@ find_package(GTest REQUIRED)
 add_executable(veeam_calculate_checksum
         src/main.cpp
         src/program_config.cpp
-        src/base_hasher.cpp
-        src/md5_hasher.cpp
-        src/crc32_hasher.cpp)
+        src/hasher/base_hasher.cpp
+        src/hasher/md5_hasher.cpp
+        src/hasher/crc32_hasher.cpp
+        src/result_writer/base_result_writer.cpp
+        src/result_writer/m_mapped_result_writer.cpp)
 target_link_libraries(veeam_calculate_checksum ${Boost_LIBRARIES})
 
 add_executable(veeam_calculate_checksum_tests

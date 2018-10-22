@@ -1,8 +1,8 @@
-#ifndef VEEAM_RESULT_WRITER_H
-#define VEEAM_RESULT_WRITER_H
+#ifndef VEEAM_BASE_RESULT_WRITER_H
+#define VEEAM_BASE_RESULT_WRITER_H
 
 
-#include "common.h"
+#include "../common.h"
 
 class BaseResultWriter {
 public:
@@ -10,10 +10,10 @@ public:
 		hash_count_(hash_count), hash_length_(hash_length) {}
 	virtual ~BaseResultWriter() = default;
 
-	void writeResult(const hash_result_t& hash, size_t index);
+	void writeResult(const hash_result_t& hash, size_t index) const;
 
 	virtual void finalize() {}
-	
+
 protected:
 	virtual void doWriteResult(const hash_result_t& hash, size_t index) const = 0;
 
@@ -22,4 +22,4 @@ protected:
 };
 
 
-#endif //VEEAM_RESULT_WRITER_H
+#endif //VEEAM_BASE_RESULT_WRITER_H
