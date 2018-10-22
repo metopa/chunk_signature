@@ -1,11 +1,15 @@
 #include "md5_hasher.h"
 
+#include <openssl/md5.h>
+
 hash_result_t Md5Hasher::calculateHash(const char* data, size_t length) const {
-	return {};
+	hash_result_t hash(hashSize());
+	MD5(reinterpret_cast<const unsigned char*>(data), length, hash.data());
+	return hash;
 }
 
 unsigned int Md5Hasher::hashSize() const {
-	return 16;
+	return MD5_DIGEST_LENGTH;
 }
 
 namespace {
@@ -14,6 +18,6 @@ namespace {
 		return 0;
 	}
 
-	static int dummy = registerBackend();
+	int dummy = registerBackend();
 }
 
