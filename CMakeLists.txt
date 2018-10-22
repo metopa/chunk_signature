@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.8)
 project(veeam_signature)
 
 set(CMAKE_CXX_STANDARD 14)
-
+set (CMAKE_CXX_FLAGS_RELEASE -g)
 # external dependencies
 find_package(Boost COMPONENTS program_options iostreams REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
@@ -33,6 +33,7 @@ if (OpenSSL_FOUND)
     set(HASHER_SRC
             ${HASHER_SRC}
             lib/hasher/md5_hasher.cpp
+            lib/hasher/sha1_hasher.cpp
             )
 else ()
     message(WARNING "OpenSSL not found. Additional hashers are not available.")
