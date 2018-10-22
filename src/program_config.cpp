@@ -139,24 +139,25 @@ ProgramConfig ProgramConfig::fromCommandLine(int argc, char** argv) {
 		throw std::runtime_error("No backends supported!");
 	}
 	auto backends_str = vectorToString(backends);
-	std::string backend_param_desc = "set hash backend, available options: " + backends_str;
+	std::string backend_param_desc = "set hash backend, supported " + backends_str;
 
 	desc.add_options()
 			("help,h", "produce help message")
-			("chunk-size,s",
-			 po::value(&chunk_str)->default_value("1m"),
-			 "set chunk size")
-			("workers,j",
-			 po::value(&config.thread_count)->default_value(0),
-			 "set worker count, default: number of HW cores")
-			("backend,b", po::value(&config.backend_name)->default_value(backends[0]),
+			("backend,b",
+			 po::value(&config.backend_name)->required(),
 			 backend_param_desc.c_str())
 			("input,i",
 			 po::value(&config.input_file)->required(),
 			 "input file")
 			("output,o",
 			 po::value(&config.output_file)->required(),
-			 "output file");
+			 "output file")
+			("chunk-size,s",
+			 po::value(&chunk_str)->default_value("1m"),
+			 "set chunk size")
+			("workers,j",
+			 po::value(&config.thread_count)->default_value(0),
+			 "set worker count, default: number of HW cores");
 
 	po::variables_map vm;
 
@@ -180,7 +181,7 @@ ProgramConfig ProgramConfig::fromCommandLine(int argc, char** argv) {
 	}
 
 	if (std::find(begin(backends), end(backends), config.backend_name) == end(backends)) {
-		throw std::runtime_error("--backend: unknown backend: supported: " + backends_str);
+		throw std::runtime_error("--backend: unknown backend: supported " + backends_str);
 	}
 
 	return config;
