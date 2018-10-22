@@ -4,10 +4,10 @@
 
 #include "../common.h"
 
+/**
+ * Base class for printing calculated hashes to an output file in random order.
+ */
 class BaseResultWriter {
-	/**
-	 * Base class for printing calculated hashes to an output file in random order.
-	 */
 public:
 	BaseResultWriter(size_t hash_count, size_t hash_length) :
 		hash_count_(hash_count), hash_length_(hash_length) {}

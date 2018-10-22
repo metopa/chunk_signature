@@ -1,7 +1,6 @@
 #include "m_mapped_result_writer.h"
 
 #include <boost/iostreams/device/mapped_file.hpp>
-#include <boost/iostreams/filter/newline.hpp>
 namespace bio = boost::iostreams;
 
 #ifdef _WIN32
@@ -10,29 +9,10 @@ const std::string NEWLINE = "\r\n";
 const std::string NEWLINE = "\n";
 #endif
 
-class MMappedResultWriter::Impl {
-public:
-	Impl(const std::string& filename, size_t hash_count, size_t hash_length);
-
-	~Impl();
-	void doWriteResult(const hash_result_t& hash, size_t index) const;
-
-private:
-	bio::mapped_file_sink file_;
-	size_t line_length_;
-};
-
-
 MMappedResultWriter::MMappedResultWriter(const std::string& filename,
 										 size_t hash_count,
 										 size_t hash_length) :
-		BaseResultWriter(hash_count, hash_length),
-		pimpl_(new Impl(filename, hash_count, hash_length)) {}
-
-
-MMappedResultWriter::Impl::Impl(const std::string& filename,
-								size_t hash_count,
-								size_t hash_length) {
+		BaseResultWriter(hash_count, hash_length) {
 	line_length_ = hash_length * 2 + NEWLINE.size();
 
 	bio::mapped_file_params params;
@@ -46,14 +26,8 @@ MMappedResultWriter::Impl::Impl(const std::string& filename,
 	}
 }
 
-MMappedResultWriter::Impl::~Impl() {
+MMappedResultWriter::~MMappedResultWriter() {
 	file_.close();
-}
-
-MMappedResultWriter::~MMappedResultWriter() = default;
-
-void MMappedResultWriter::doWriteResult(const hash_result_t& hash, size_t index) const {
-	pimpl_->doWriteResult(hash, index);
 }
 
 
@@ -65,7 +39,7 @@ void writeByteHex(char* out, unsigned char byte) {
 	out[1] = hexmap[byte & 0x0F];
 }
 
-void MMappedResultWriter::Impl::doWriteResult(const hash_result_t& hash, size_t index) const {
+void MMappedResultWriter::doWriteResult(const hash_result_t& hash, size_t index) const {
 	auto data = file_.data() + line_length_ * index;
 	for (auto b : hash) {
 		writeByteHex(data, b);

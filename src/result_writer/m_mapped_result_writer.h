@@ -5,13 +5,14 @@
 
 #include <memory>
 
-class MMappedResultWriter : public BaseResultWriter {
-	/**
-	 * ResultWriter implementation using a memory-mapped file
-	 * for a fast random order output.
-	 */
-	class Impl;
+#include <boost/iostreams/device/mapped_file.hpp>
 
+
+/**
+ * ResultWriter implementation using a memory-mapped file
+ * for a fast random order output.
+ */
+class MMappedResultWriter : public BaseResultWriter {
 public:
 	MMappedResultWriter(const std::string& filename, size_t hash_count, size_t hash_length);
 	~MMappedResultWriter() override;
@@ -19,7 +20,8 @@ protected:
 	void doWriteResult(const hash_result_t& hash, size_t index) const override;
 
 private:
-	std::unique_ptr<Impl> pimpl_;
+	boost::iostreams::mapped_file_sink file_;
+	size_t line_length_;
 };
 
 
