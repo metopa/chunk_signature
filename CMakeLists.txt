@@ -17,6 +17,8 @@ set(HASHER_SRC
         lib/hasher/crc32_hasher.cpp
         )
 add_library(hasher ${HASHER_SRC})
+SET(hasher_LIBRARY -Wl,--whole-archive hasher -Wl,--no-whole-archive)
+    target_link_libraries(hasher OpenSSL::SSL)
 
 add_executable(signature
         src/main.cpp
@@ -25,7 +27,7 @@ add_executable(signature
         src/result_writer/m_mapped_result_writer.cpp
         src/file_chunker.cpp
         )
-target_link_libraries(signature ${Boost_LIBRARIES} hasher)
+target_link_libraries(signature ${Boost_LIBRARIES} ${hasher_LIBRARY})
 
 add_executable(signature_test
         test/program_config_test.cpp
