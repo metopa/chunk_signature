@@ -17,7 +17,9 @@ add_executable(veeam_calculate_checksum
         src/hasher/md5_hasher.cpp
         src/hasher/crc32_hasher.cpp
         src/result_writer/base_result_writer.cpp
-        src/result_writer/m_mapped_result_writer.cpp)
+        src/result_writer/m_mapped_result_writer.cpp
+        src/file_chunker.cpp
+        )
 target_link_libraries(veeam_calculate_checksum ${Boost_LIBRARIES})
 
 add_executable(veeam_calculate_checksum_tests
