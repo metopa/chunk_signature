@@ -17,3 +17,13 @@ hash_result_t Crc32Hasher::calculateHash(const char* data, size_t length) const 
 unsigned int Crc32Hasher::hashSize() const {
 	return 4;
 }
+
+namespace {
+	int registerBackend() {
+		BaseHasher::registerBackend("crc32", [] { return BaseHasher::ptr_t(new Crc32Hasher()); });
+		return 0;
+	}
+
+	int dummy = registerBackend();
+}
+

@@ -2,6 +2,7 @@
 #define VEEAM_BASE_HASHER_H
 
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <vector>
 
@@ -13,7 +14,8 @@ public:
 
 	static std::vector<std::string> getSupportedBackends();
 	static ptr_t getBackendByName(const std::string& name);
-
+	static void registerBackend(const std::string& name,
+								const std::function<ptr_t()>& creator);
 
 	virtual ~BaseHasher() = default;
 	virtual hash_result_t calculateHash(const char* data, size_t length) const = 0;

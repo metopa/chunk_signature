@@ -8,10 +8,7 @@
 #include "crc32_hasher.h"
 #include "md5_hasher.h"
 
-std::map<std::string, std::function<BaseHasher::ptr_t()>> BACKENDS = {
-		{"crc32", [] { return BaseHasher::ptr_t(new Crc32Hasher()); }},
-		{"md5",   [] { return BaseHasher::ptr_t(new Md5Hasher()); }}
-};
+std::map<std::string, std::function<BaseHasher::ptr_t()>> BACKENDS;
 
 std::vector<std::string> BaseHasher::getSupportedBackends() {
 	std::vector<std::string> names;
@@ -26,4 +23,8 @@ std::shared_ptr<BaseHasher> BaseHasher::getBackendByName(const std::string& name
 		throw std::runtime_error("Unknown backend");
 	}
 	return it->second();
+}
+
+void BaseHasher::registerBackend(const std::string& name, const std::function<ptr_t()>& creator) {
+	BACKENDS[name] = creator;
 }
