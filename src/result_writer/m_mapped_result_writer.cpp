@@ -4,6 +4,11 @@
 #include <boost/iostreams/filter/newline.hpp>
 namespace bio = boost::iostreams;
 
+#ifdef _WIN32
+const std::string NEWLINE = "\r\n";
+#else
+const std::string NEWLINE = "\n";
+#endif
 
 class MMappedResultWriter::Impl {
 public:
@@ -28,12 +33,13 @@ MMappedResultWriter::MMappedResultWriter(const std::string& filename,
 MMappedResultWriter::Impl::Impl(const std::string& filename,
 								size_t hash_count,
 								size_t hash_length) {
-	std::string nl = "\n";
-	line_length_ = hash_length * 2 + nl.size();
+	line_length_ = hash_length * 2 + NEWLINE.size();
+
 	bio::mapped_file_params params;
 	params.path = filename;
 	params.new_file_size = line_length_ * hash_count;
 	params.flags = bio::mapped_file::mapmode::readwrite;
+
 	file_.open(params);
 	if (!file_.is_open()) {
 		throw std::runtime_error("Can't open " + filename + " for writing");
@@ -65,5 +71,6 @@ void MMappedResultWriter::Impl::doWriteResult(const hash_result_t& hash, size_t 
 		writeByteHex(data, b);
 		data += 2;
 	}
-	*data = '\n';
+
+	std::copy(begin(NEWLINE), end(NEWLINE), data);
 }
