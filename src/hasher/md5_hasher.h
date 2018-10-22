@@ -6,7 +6,7 @@
 
 class Md5Hasher : public BaseHasher {
 public:
-	hash_result_t calculateHash(char* data, size_t length) const override;
+	hash_result_t calculateHash(const char* data, size_t length) const override;
 	unsigned int hashSize() const override;
 };
 

@@ -1,6 +1,6 @@
 #include "md5_hasher.h"
 
-hash_result_t Md5Hasher::calculateHash(char* data, size_t length) const {
+hash_result_t Md5Hasher::calculateHash(const char* data, size_t length) const {
 	return std::vector<uint8_t>();
 }
 

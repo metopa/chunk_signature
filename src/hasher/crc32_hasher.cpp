@@ -1,6 +1,6 @@
 #include "crc32_hasher.h"
 
-hash_result_t Crc32Hasher::calculateHash(char* data, size_t length) const {
+hash_result_t Crc32Hasher::calculateHash(const char* data, size_t length) const {
 	return std::vector<uint8_t>();
 }
 
