@@ -14,5 +14,6 @@ namespace {
 		return 0;
 	}
 
-	int dummy = registerBackend();
+	static int dummy = registerBackend();
 }
+

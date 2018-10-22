@@ -6,7 +6,7 @@
 #include <memory>
 #include <vector>
 
-#include "../common.h"
+#include "../../src/common.h"
 
 class BaseHasher {
 public:

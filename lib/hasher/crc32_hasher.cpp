@@ -26,4 +26,3 @@ namespace {
 
 	int dummy = registerBackend();
 }
-

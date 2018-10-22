@@ -1,4 +1,4 @@
-#include "base_hasher.h"
+#include "hasher/base_hasher.h"
 
 #include <algorithm>
 #include <functional>
