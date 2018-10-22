@@ -6,7 +6,7 @@
 
 class Crc32Hasher : public BaseHasher {
 public:
-	hash_result_t calculateHash(const char* data, size_t length) const override;
+	void calculateHash(const char* data, size_t length, hash_result_t& out) const override;
 	unsigned int hashSize() const override;
 };
 

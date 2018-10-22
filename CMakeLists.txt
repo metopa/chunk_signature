@@ -11,6 +11,14 @@ find_package(GTest REQUIRED)
 
 find_package(OpenSSL)
 
+find_package(OpenMP)
+if (OPENMP_FOUND)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+else ()
+    message(WARNING "OpenMP not found. Compiling without threading support.")
+endif ()
 
 # hasher library
 include_directories(include)
@@ -21,19 +29,19 @@ set(HASHER_SRC
         )
 
 if (OpenSSL_FOUND)
-    message(STATUS "OpenSSL found. Additional hashers are available.")
+    message(STATUS "OpenSSL ${OPENSSL_VERSION} found. Additional hashers are available.")
     set(HASHER_SRC
             ${HASHER_SRC}
             lib/hasher/md5_hasher.cpp
             )
-else (OpenSSL_FOUND)
+else ()
     message(WARNING "OpenSSL not found. Additional hashers are not available.")
-endif (OpenSSL_FOUND)
+endif ()
 
 add_library(hasher ${HASHER_SRC})
 if (OpenSSL_FOUND)
     target_link_libraries(hasher OpenSSL::SSL)
-endif (OpenSSL_FOUND)
+endif ()
 
 # enable static factory registration
 # without this hack register functions wouldn't be included in an executable

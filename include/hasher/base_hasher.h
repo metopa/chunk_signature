@@ -18,7 +18,7 @@ public:
 								const std::function<ptr_t()>& creator);
 
 	virtual ~BaseHasher() = default;
-	virtual hash_result_t calculateHash(const char* data, size_t length) const = 0;
+	virtual void calculateHash(const char* data, size_t length, hash_result_t& out) const = 0;
 	virtual unsigned hashSize() const = 0;
 };
 

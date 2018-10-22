@@ -2,10 +2,8 @@
 
 #include <openssl/md5.h>
 
-hash_result_t Md5Hasher::calculateHash(const char* data, size_t length) const {
-	hash_result_t hash(hashSize());
-	MD5(reinterpret_cast<const unsigned char*>(data), length, hash.data());
-	return hash;
+void Md5Hasher::calculateHash(const char* data, size_t length, hash_result_t& out) const {
+	MD5(reinterpret_cast<const unsigned char*>(data), length, out.data());
 }
 
 unsigned int Md5Hasher::hashSize() const {
