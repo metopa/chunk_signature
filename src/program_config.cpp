@@ -9,6 +9,8 @@
 #include <boost/program_options.hpp>
 #include <boost/spirit/include/qi.hpp>
 
+#include "hasher/base_hasher.h"
+
 uint64_t sizeLiteralToNum(std::string size_literal) {
 	static std::map<std::string, uint64_t> LITERAL2MULTIPLIER{
 			{"",  1},
@@ -103,6 +105,27 @@ uint64_t sizeStringToNum(const std::string& size_str) {
 	}
 }
 
+
+std::string vectorToString(const std::vector<std::string>& v) {
+	std::stringstream out;
+
+	out << '[';
+	bool first = true;
+	for (auto& x : v) {
+		if (first) {
+			first = false;
+		} else {
+			out << ", ";
+		}
+
+		out << x;
+	}
+
+	out << ']';
+	return out.str();
+}
+
+
 ProgramConfig ProgramConfig::fromCommandLine(int argc, char** argv) {
 	namespace po = boost::program_options;
 
@@ -110,6 +133,13 @@ ProgramConfig ProgramConfig::fromCommandLine(int argc, char** argv) {
 
 	ProgramConfig config;
 	std::string chunk_str;
+
+	auto backends = BaseHasher::getSupportedBackends();
+	if (backends.empty()) {
+		throw std::runtime_error("No backends supported!");
+	}
+	auto backends_str = vectorToString(backends);
+	std::string backend_param_desc = "set hash backend, available options: " + backends_str;
 
 	desc.add_options()
 			("help,h", "produce help message")
@@ -119,6 +149,8 @@ ProgramConfig ProgramConfig::fromCommandLine(int argc, char** argv) {
 			("workers,j",
 			 po::value(&config.thread_count)->default_value(0),
 			 "set worker count, default: number of HW cores")
+			("backend,b", po::value(&config.backend_name)->default_value(backends[0]),
+			 backend_param_desc.c_str())
 			("input,i",
 			 po::value(&config.input_file)->required(),
 			 "input file")
@@ -147,10 +179,14 @@ ProgramConfig ProgramConfig::fromCommandLine(int argc, char** argv) {
 		throw std::runtime_error("--chunk-size: chunk size must be positive");
 	}
 
+	if (std::find(begin(backends), end(backends), config.backend_name) == end(backends)) {
+		throw std::runtime_error("--backend: unknown backend: supported: " + backends_str);
+	}
+
 	return config;
 }
 
 std::ostream& operator<<(std::ostream& out, const ProgramConfig& config) {
-	return out << boost::format("Config{chunk_size=%1%, input=%2%, output=%3%}") %
-				  config.chunk_size % config.input_file % config.output_file;
+	return out << boost::format("Config{chunk_size=%1%, backend=%2%, input=%3%, output=%4%}") %
+				  config.chunk_size % config.backend_name % config.input_file % config.output_file;
 }
