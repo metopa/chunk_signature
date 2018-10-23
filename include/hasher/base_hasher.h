@@ -9,6 +9,14 @@
 
 using hash_result_t = std::vector<uint8_t>;
 
+/**
+ * BaseHasher defines hashing algorithm API and
+ * a static factory of these algorithms.
+ *
+ * Each hashing algorithm has to invoke
+ * `registerBackend` with it's name and a function,
+ * that creates an instance of the class.
+ */
 class BaseHasher {
 public:
 	using ptr_t = std::shared_ptr<BaseHasher>;

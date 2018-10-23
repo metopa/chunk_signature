@@ -3,6 +3,9 @@
 
 #include "hasher/base_hasher.h"
 
+/**
+ * MD5 implementation of `BaseHasher` interface
+ */
 class Md5Hasher : public BaseHasher {
 public:
 	void calculateHash(const char* data, size_t length, hash_result_t& out) const override;

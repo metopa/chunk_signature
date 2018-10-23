@@ -4,6 +4,10 @@
 
 #include "hasher/base_hasher.h"
 
+
+/**
+ * SHA1 implementation of `BaseHasher` interface
+ */
 class Sha1Hasher : public BaseHasher {
 public:
 	void calculateHash(const char* data, size_t length, hash_result_t& out) const override;
