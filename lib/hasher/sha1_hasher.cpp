@@ -1,9 +1,12 @@
 #include "sha1_hasher.h"
 
+#include <cassert>
+
 #include <openssl/sha.h>
 
-void Sha1Hasher::calculateHash(const char* data, size_t length, hash_result_t& out) const {
-	SHA1(reinterpret_cast<const unsigned char*>(data), length, out.data());
+void Sha1Hasher::calculateHash(const char* data, size_t length, hash_result_t* out) const {
+	assert(out->size() >= hashSize());
+	SHA1(reinterpret_cast<const unsigned char*>(data), length, out->data());
 }
 
 unsigned int Sha1Hasher::hashSize() const {

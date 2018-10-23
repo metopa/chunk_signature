@@ -6,7 +6,15 @@
 #include "program_config.h"
 #include "result_writer/m_mapped_result_writer.h"
 
-
+/**
+ * Calculate hashes for each chunk of an input file and write result to an output file.
+ *
+ * @param config - program configuration
+ * @param hasher - hashing algorithm
+ * @param input - input file chunk provider
+ * @param output - result writer
+ * @param verbose - enables progress logging
+ */
 void process(const ProgramConfig& config,
 			 const BaseHasher::ptr_t& hasher,
 			 FileChunker& input,
@@ -27,7 +35,7 @@ void process(const ProgramConfig& config,
 		#pragma omp for schedule(static)
 		for (size_t i = 0; i < chunk_count; i++) {
 			auto chunk = input.getChunk(i);
-			hasher->calculateHash(chunk.data, chunk.size, hash);
+			hasher->calculateHash(chunk.data, chunk.size, &hash);
 			output.writeResult(hash, i);
 
 			if (verbose) {
@@ -60,7 +68,6 @@ int main(int argc, char* argv[]) {
 		std::cerr << e.what() << std::endl;
 		return 1;
 	}
-
-
+	
 	return 0;
 }

@@ -4,6 +4,10 @@
 
 #include <boost/iostreams/device/mapped_file.hpp>
 
+/**
+ * FileChunker opens a file and allows to iterate over fix-sized chunks
+ * (last chunk can be shorter, than others.
+ */
 class FileChunker {
 public:
 	struct Chunk {
@@ -11,11 +15,37 @@ public:
 		size_t size;
 	};
 
+	/**
+	 * Constructor.
+	 *
+	 * @param filename - path to a file to be opened.
+	 * @param chunk_size - max size of a chunk.
+	 */
 	FileChunker(const std::string& filename, size_t chunk_size);
+
+	/**
+	 * Destructor.
+	 */
 	~FileChunker();
 
+	/**
+	 * Max size of a chunk.
+	 */
 	size_t maxChunkSize() const;
+
+	/**
+	 * Total number of chunks.
+	 * Equals to ceil(file size / chunk size)
+	 */
 	size_t chunkCount() const;
+
+	/**
+	 * Get i-th chunk.
+	 * This function can be called concurrently.
+	 *
+	 * @param index - chunk index
+	 * @return Chunk - pointer to the chunk and its size
+	 */
 	Chunk getChunk(size_t index) const;
 
 private:
