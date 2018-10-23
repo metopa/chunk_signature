@@ -49,29 +49,6 @@ std::ostream& operator<<(std::ostream& out, const ProgramConfig& config);
  */
 uint64_t sizeLiteralToNum(std::string size_literal);
 
-/**
- * Convert an integral size with possible size literal to the number of bytes.
- *
- * Examples:
- * 	"100" => 100
- * 	"100 b" => 100
- * 	"100 kb" => 102400
- *
- * @see sizeLiteralToNum()
- */
-uint64_t exactSizeStringToNum(const std::string& size_str);
-
-/**
- * Convert a float size with possible size literal to the number of bytes.
- *
- * Examples:
- * 	"100.1" => 100
- * 	"100 b" => 100
- * 	"0.5 kb" => 512
- *
- * @see sizeLiteralToNum()
- */
-uint64_t floatSizeStringToNum(const std::string& size_str);
 
 /**
  * Convert either an integral or a float size
@@ -82,6 +59,8 @@ uint64_t floatSizeStringToNum(const std::string& size_str);
  * 	"100 b" => 100
  * 	"100 kb" => 102400
  * 	"0.5 kb" => 512
+ *
+ * @see sizeLiteralToNum()
  */
 uint64_t sizeStringToNum(const std::string& size_str);
 

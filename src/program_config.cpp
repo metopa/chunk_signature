@@ -2,12 +2,11 @@
 
 #include <iostream>
 #include <map>
-#include <regex>
 
 #include <boost/format.hpp>
-#include <boost/phoenix/core.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
-#include <boost/spirit/include/qi.hpp>
+#include <boost/xpressive/xpressive_static.hpp>
 
 #include "hasher/base_hasher.h"
 
@@ -34,75 +33,50 @@ uint64_t sizeLiteralToNum(std::string size_literal) {
 	}
 
 	return it->second;
-
-}
-
-uint64_t exactSizeStringToNum(const std::string& size_str) {
-	namespace qi = boost::spirit::qi;
-	namespace ph = boost::phoenix;
-
-	uint64_t val = 0;
-	std::string literal;
-
-	auto assign_val = [&](auto a) { val = a; };
-	auto append_literal = [&](auto a) { literal.push_back(a); };
-
-	auto parser = qi::ulong_long[assign_val] >> *qi::alpha[append_literal];
-	auto b = begin(size_str);
-	auto e = end(size_str);
-
-	bool success = qi::phrase_parse(b, e, parser,
-									boost::spirit::ascii::space);
-
-	if (b == e && success) {
-		return val * sizeLiteralToNum(literal);
-	}
-
-	throw std::runtime_error(
-			"can't decode size: "
-			"expected format: <number> <one of {b, kb, mb, gb}>, "
-			"got: " + size_str);
-}
-
-uint64_t floatSizeStringToNum(const std::string& size_str) {
-	namespace qi = boost::spirit::qi;
-	namespace ph = boost::phoenix;
-
-	double val = 0;
-	std::string literal;
-
-	auto assign_val = [&](auto a) { val = a; };
-	auto append_literal = [&](auto a) { literal.push_back(a); };
-
-	auto parser = qi::double_[assign_val] >> *qi::alpha[append_literal];
-	auto b = begin(size_str);
-	auto e = end(size_str);
-
-	bool success = qi::phrase_parse(b, e, parser,
-									boost::spirit::ascii::space);
-
-	if (b == e && success) {
-		if (val < 0) {
-			throw std::runtime_error("can't decode size: negative number");
-		}
-		return size_t(round(val * sizeLiteralToNum(literal)));
-	}
-
-	throw std::runtime_error(
-			"can't decode size: "
-			"expected format: <number> <one of {b, kb, mb, gb}>, "
-			"got: " + size_str);
 }
 
 
 uint64_t sizeStringToNum(const std::string& size_str) {
-	try {
-		// First try to decode an exact integral number to avoid floating point error
-		return exactSizeStringToNum(size_str);
-	} catch (std::runtime_error&) {
-		// Try to decode a real number, we don't care about rounding
-		return floatSizeStringToNum(size_str);
+	using namespace boost::xpressive;
+
+	mark_tag num_tag(1), literal_tag(2);
+	sregex cre_num_literal = *_s >> (num_tag = +_d >> !('.' >> +_d)) >>
+								 *_s >> (literal_tag = *_w) >> *_s;
+	smatch matches;
+
+	if (!regex_match(size_str, matches, cre_num_literal)) {
+		throw std::runtime_error(
+				"can't decode size: "
+				"expected format: <number> <one of {b, kb, mb, gb}>, "
+				"got: " + size_str);
 	}
+
+	auto multiplier = sizeLiteralToNum(matches[literal_tag]);
+	auto num_str = matches[num_tag];
+
+	try {
+		return boost::lexical_cast<size_t>(num_str) * multiplier;
+	} catch (boost::bad_lexical_cast&) {
+		// ignore it, try as double
+	}
+
+	double result = 0;
+	try {
+		result = boost::lexical_cast<double>(num_str) * multiplier;
+	} catch (boost::bad_lexical_cast&) {
+		throw std::runtime_error(
+				"can't decode size: "
+				"expected format: <number> <one of {b, kb, mb, gb}>, "
+				"got: " + size_str);
+	}
+
+	if (result < 0) {
+		throw std::runtime_error("can't decode size: float size < 0");
+	}
+	if (result >= std::numeric_limits<size_t>::max()) {
+		throw std::runtime_error("can't decode size: float size is too big");
+	}
+	return size_t(std::round(result));
 }
 
 

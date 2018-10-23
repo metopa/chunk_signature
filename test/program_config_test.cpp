@@ -28,44 +28,36 @@ TEST(sizeLiteralToNumTest, HandlesUppercase) {
 }
 
 
-TEST(exactSizeStringToNum, Basic) {
-	ASSERT_EQ(exactSizeStringToNum("000"), 0);
-	ASSERT_EQ(exactSizeStringToNum("1200"), 1200);
-	ASSERT_EQ(exactSizeStringToNum("   1200 "), 1200);
+TEST(sizeStringToNum, Basic) {
+	ASSERT_EQ(sizeStringToNum("000"), 0);
+	ASSERT_EQ(sizeStringToNum("1200"), 1200);
+	ASSERT_EQ(sizeStringToNum("   1200 "), 1200);
 }
 
-TEST(exactSizeStringToNum, HandlesLiteral) {
-	ASSERT_EQ(exactSizeStringToNum("10b"), 10);
-	ASSERT_EQ(exactSizeStringToNum("10 b"), 10);
-	ASSERT_EQ(exactSizeStringToNum("10 b "), 10);
-	ASSERT_EQ(exactSizeStringToNum("10kb"), 10240);
-	ASSERT_EQ(exactSizeStringToNum("10 kb"), 10240);
-	ASSERT_EQ(exactSizeStringToNum("10 kb "), 10240);
-	ASSERT_EQ(exactSizeStringToNum("10 KB "), 10240);
+TEST(sizeStringToNum, HandlesLiteral) {
+	ASSERT_EQ(sizeStringToNum("10b"), 10);
+	ASSERT_EQ(sizeStringToNum("10 b"), 10);
+	ASSERT_EQ(sizeStringToNum("10 b "), 10);
+	ASSERT_EQ(sizeStringToNum("10kb"), 10240);
+	ASSERT_EQ(sizeStringToNum("10 kb"), 10240);
+	ASSERT_EQ(sizeStringToNum("10 kb "), 10240);
+	ASSERT_EQ(sizeStringToNum("10 KB "), 10240);
 }
 
-TEST(exactSizeStringToNum, FloatInput) {
-	ASSERT_THROW(exactSizeStringToNum("00."), std::runtime_error);
-	ASSERT_THROW(exactSizeStringToNum("3.14"), std::runtime_error);
-	ASSERT_THROW(exactSizeStringToNum("2.KB"), std::runtime_error);
+
+TEST(sizeStringToNum, HandlesFloatInput) {
+	ASSERT_EQ(sizeStringToNum("00.0"), 0);
+	ASSERT_EQ(sizeStringToNum("1.200"), 1);
+	ASSERT_THROW(sizeStringToNum("   .1200 "), std::runtime_error);
 }
 
-TEST(floatSizeStringToNum, Basic) {
-	ASSERT_EQ(floatSizeStringToNum("000"), 0);
-	ASSERT_EQ(floatSizeStringToNum("1200"), 1200);
-	ASSERT_EQ(floatSizeStringToNum("   1200 "), 1200);
-	ASSERT_EQ(floatSizeStringToNum("00.0"), 0);
-	ASSERT_EQ(floatSizeStringToNum("1.200"), 1);
-	ASSERT_EQ(floatSizeStringToNum("   .1200 "), 0);
-}
-
-TEST(floatSizeStringToNum, HandlesLiteral) {
-	ASSERT_EQ(floatSizeStringToNum("10.3b"), 10);
-	ASSERT_EQ(floatSizeStringToNum("10.2 b"), 10);
-	ASSERT_EQ(floatSizeStringToNum("10.7 b "), 11);
-	ASSERT_EQ(floatSizeStringToNum("0.5kb"), 512);
-	ASSERT_EQ(floatSizeStringToNum("0.5 kb"), 512);
-	ASSERT_EQ(floatSizeStringToNum("0.5 kb "), 512);
-	ASSERT_EQ(floatSizeStringToNum("0.5 KB "), 512);
+TEST(sizeStringToNum, HandlesFloatInputWithLiteral) {
+	ASSERT_EQ(sizeStringToNum("10.3b"), 10);
+	ASSERT_EQ(sizeStringToNum("10.2 b"), 10);
+	ASSERT_EQ(sizeStringToNum("10.7 b "), 11);
+	ASSERT_EQ(sizeStringToNum("0.5kb"), 512);
+	ASSERT_EQ(sizeStringToNum("0.5 kb"), 512);
+	ASSERT_EQ(sizeStringToNum("0.5 kb "), 512);
+	ASSERT_EQ(sizeStringToNum("0.5 KB "), 512);
 }
 

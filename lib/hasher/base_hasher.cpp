@@ -1,5 +1,6 @@
 #include "hasher/base_hasher.h"
 
+#include <algorithm>
 #include <iterator>
 #include <map>
 
