@@ -1,14 +1,21 @@
 cmake_minimum_required(VERSION 3.8)
 project(veeam_signature)
 
+# Application dependencies:
+#  - Boost: required
+#  - Google Test: optional, required for building tests
+#  - OpenMP: optional, required for enabling parallel processing
+#  - OpenSSL: optional, required for enabling additional hash algorithms (MD5, SHA-1)
+
+
 set(CMAKE_CXX_STANDARD 14)
-# set(CMAKE_CXX_FLAGS_RELEASE "-Wall")
+set(CMAKE_CXX_FLAGS "-Wall")
 
 # external dependencies
 find_package(Boost COMPONENTS program_options iostreams REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
-find_package(GTest REQUIRED)
+find_package(GTest)
 
 find_package(OpenSSL)
 
@@ -65,14 +72,18 @@ add_executable(signature
 target_link_libraries(signature ${Boost_LIBRARIES} ${hasher_LIBRARY})
 
 # tests
-add_executable(signature_test
-        test/program_config_test.cpp
-        src/program_config.cpp)
-target_link_libraries(signature_test
-        ${Boost_LIBRARIES}
-        GTest::GTest
-        GTest::Main)
-gtest_discover_tests(signature_test)
-
+if (GTest_FOUND)
+    add_executable(signature_test
+            test/program_config_test.cpp
+            src/program_config.cpp)
+    target_link_libraries(signature_test
+            ${Boost_LIBRARIES}
+            ${hasher_LIBRARY}
+            GTest::GTest
+            GTest::Main)
+    gtest_discover_tests(signature_test)
+else ()
+    message(WARNING "Google Test not found. Omitting building tests.")
+endif ()
 
 
