@@ -32,6 +32,7 @@ public:
 	 * Destructor.
 	 */
 	~MMappedResultWriter() override;
+
 protected:
 	void doWriteResult(const hash_result_t& hash, size_t index) const override;
 

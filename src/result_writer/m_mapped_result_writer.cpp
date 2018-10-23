@@ -1,6 +1,5 @@
 #include "m_mapped_result_writer.h"
 
-#include <boost/iostreams/device/mapped_file.hpp>
 namespace bio = boost::iostreams;
 
 #ifdef _WIN32

@@ -1,6 +1,5 @@
 #include "file_chunker.h"
 
-#include <boost/iostreams/device/mapped_file.hpp>
 namespace bio = boost::iostreams;
 
 FileChunker::FileChunker(const std::string& filename, size_t chunk_size) {

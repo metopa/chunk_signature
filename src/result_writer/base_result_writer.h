@@ -17,7 +17,7 @@ public:
 	 * @param hash_length - fixed byte length of a hash
 	 */
 	BaseResultWriter(size_t hash_count, size_t hash_length) :
-		hash_count_(hash_count), hash_length_(hash_length) {}
+			hash_count_(hash_count), hash_length_(hash_length) {}
 
 	/**
 	 * Virtual dtor

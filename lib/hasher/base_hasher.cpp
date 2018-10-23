@@ -1,13 +1,7 @@
 #include "hasher/base_hasher.h"
 
-#include <algorithm>
-#include <functional>
 #include <iterator>
 #include <map>
-#include <iostream>
-
-#include "crc32_hasher.h"
-#include "md5_hasher.h"
 
 namespace {
 	std::map<std::string, std::function<BaseHasher::ptr_t()>>& getBackends() {
