@@ -1,5 +1,4 @@
 #include <iostream>
-#include <omp.h>
 
 #include "file_chunker.h"
 #include "hasher/base_hasher.h"
@@ -20,10 +19,6 @@ void process(const ProgramConfig& config,
 			 FileChunker& input,
 			 MMappedResultWriter& output,
 			 bool verbose) {
-	if (config.thread_count != 0) {
-		omp_set_num_threads(config.thread_count);
-	}
-
 	std::atomic<size_t> processed_blocks;
 	processed_blocks = 0;
 	const size_t chunk_count = input.chunkCount();
@@ -41,7 +36,7 @@ void process(const ProgramConfig& config,
 			if (verbose) {
 				processed_blocks++;
 
-				if (omp_get_thread_num() == 0) {
+				if (true) {
 					std::cout << "processed " << processed_blocks << " of " << chunk_count << "\r";
 					std::cout.flush();
 				};

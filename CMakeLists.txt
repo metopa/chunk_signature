@@ -4,7 +4,6 @@ project(veeam_signature)
 # Application dependencies:
 #  - Boost: required
 #  - Google Test: optional, required for building tests
-#  - OpenMP: optional, required for enabling parallel processing
 #  - OpenSSL: optional, required for enabling additional hash algorithms (MD5, SHA-1)
 
 
@@ -18,15 +17,6 @@ include_directories(${Boost_INCLUDE_DIRS})
 find_package(GTest)
 
 find_package(OpenSSL)
-
-find_package(OpenMP)
-if (OPENMP_FOUND)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
-else ()
-    message(WARNING "OpenMP not found. Compiling without threading support.")
-endif ()
 
 # hasher library
 include_directories(include)
