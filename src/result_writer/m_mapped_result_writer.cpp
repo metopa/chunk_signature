@@ -19,9 +19,10 @@ MMappedResultWriter::MMappedResultWriter(const std::string& filename,
 	params.new_file_size = line_length_ * hash_count;
 	params.flags = bio::mapped_file::mapmode::readwrite;
 
-	file_.open(params);
-	if (!file_.is_open()) {
-		throw std::runtime_error("Can't open " + filename + " for writing");
+	try {
+		file_.open(params);
+	} catch (BOOST_IOSTREAMS_FAILURE& e) {
+		throw std::runtime_error(filename + ": " + e.what());
 	}
 }
 

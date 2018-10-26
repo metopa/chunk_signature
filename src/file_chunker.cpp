@@ -9,9 +9,10 @@ FileChunker::FileChunker(const std::string& filename, size_t chunk_size) {
 	params.path = filename;
 	params.flags = bio::mapped_file::mapmode::readonly;
 
-	file_.open(params);
-	if (!file_.is_open()) {
-		throw std::runtime_error("Can't open " + filename + " for writing");
+	try {
+		file_.open(params);
+	} catch (BOOST_IOSTREAMS_FAILURE& e) {
+		throw std::runtime_error(filename + ": " + e.what());
 	}
 }
 
