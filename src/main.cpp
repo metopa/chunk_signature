@@ -4,6 +4,7 @@
 #include "hasher/base_hasher.h"
 #include "program_config.h"
 #include "result_writer/m_mapped_result_writer.h"
+#include "thread_executor.h"
 
 /**
  * Calculate hashes for each chunk of an input file and write result to an output file.
@@ -23,26 +24,31 @@ void process(const ProgramConfig& config,
 	processed_blocks = 0;
 	const size_t chunk_count = input.chunkCount();
 
-	#pragma omp parallel
-	{
-		hash_result_t hash(hasher->hashSize());
+	parallelRun(
+			config.thread_count,
+			[&](unsigned thread_id, unsigned thread_count) {
+				hash_result_t hash(hasher->hashSize());
 
-		#pragma omp for schedule(static)
-		for (size_t i = 0; i < chunk_count; i++) {
-			auto chunk = input.getChunk(i);
-			hasher->calculateHash(chunk.data, chunk.size, &hash);
-			output.writeResult(hash, i);
+				for (size_t i = thread_id;
+					 i < chunk_count;
+					 i += thread_count) {
 
-			if (verbose) {
-				processed_blocks++;
+					auto chunk = input.getChunk(i);
+					hasher->calculateHash(chunk.data, chunk.size, &hash);
+					output.writeResult(hash, i);
 
-				if (true) {
-					std::cout << "processed " << processed_blocks << " of " << chunk_count << "\r";
-					std::cout.flush();
-				};
-			}
-		}
-	}
+					if (verbose) {
+						processed_blocks++;
+
+						if (thread_id == 0) {
+							std::cout << "processed " <<
+									  processed_blocks << " of "
+									  << chunk_count << "\r";
+							std::cout.flush();
+						};
+					}
+				}
+			});
 
 	if (verbose) {
 		std::cout << "processed " << processed_blocks << " of " << chunk_count << std::endl;

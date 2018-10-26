@@ -18,6 +18,8 @@ find_package(GTest)
 
 find_package(OpenSSL)
 
+find_package(Threads REQUIRED)
+
 # hasher library
 include_directories(include)
 
@@ -58,8 +60,12 @@ add_executable(signature
         src/result_writer/base_result_writer.cpp
         src/result_writer/m_mapped_result_writer.cpp
         src/file_chunker.cpp
+        src/thread_executor.cpp
         )
-target_link_libraries(signature ${Boost_LIBRARIES} ${hasher_LIBRARY})
+target_link_libraries(signature
+        ${Boost_LIBRARIES}
+        ${hasher_LIBRARY}
+        Threads::Threads)
 
 # tests
 if (GTest_FOUND)
