@@ -16,7 +16,7 @@
  * @param verbose - enables progress logging
  */
 void process(const ProgramConfig& config,
-			 const BaseHasher::ptr_t& hasher,
+			 const std::string& hasher_name,
 			 FileChunker& input,
 			 MMappedResultWriter& output,
 			 bool verbose) {
@@ -27,6 +27,7 @@ void process(const ProgramConfig& config,
 	parallelRun(
 			config.thread_count,
 			[&](unsigned thread_id, unsigned thread_count) {
+				auto hasher = BaseHasher::createBackendByName(hasher_name);
 				hash_result_t hash(hasher->hashSize());
 
 				for (size_t i = thread_id;
@@ -34,7 +35,9 @@ void process(const ProgramConfig& config,
 					 i += thread_count) {
 
 					auto chunk = input.getChunk(i);
-					hasher->calculateHash(chunk.data, chunk.size, &hash);
+					hasher->init();
+					hasher->processBlock(chunk.data, chunk.size);
+					hasher->finalize(&hash);
 					output.writeResult(hash, i);
 
 					if (verbose) {
@@ -60,11 +63,11 @@ int main(int argc, char* argv[]) {
 	try {
 		auto config = ProgramConfig::fromCommandLine(argc, argv);
 
-		auto backend = BaseHasher::getBackendByName(config.backend_name);
+		auto hash_size = BaseHasher::getStaticBackendByName(config.backend_name)->hashSize();
 		FileChunker input(config.input_file, config.chunk_size);
-		MMappedResultWriter output(config.output_file, input.chunkCount(), backend->hashSize());
+		MMappedResultWriter output(config.output_file, input.chunkCount(), hash_size);
 
-		process(config, backend, input, output, true);
+		process(config, config.backend_name, input, output, true);
 	} catch (std::exception& e) {
 		std::cerr << e.what() << std::endl;
 		return 1;

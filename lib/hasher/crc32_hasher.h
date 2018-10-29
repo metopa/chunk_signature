@@ -2,6 +2,8 @@
 #define VEEAM_CRC_HASHER_H
 
 
+#include <boost/crc.hpp>
+
 #include "hasher/base_hasher.h"
 
 /**
@@ -9,9 +11,18 @@
  */
 class Crc32Hasher : public BaseHasher {
 public:
-	void calculateHash(const char* data, size_t length, hash_result_t* out) const override;
+	void init() override;
+
+	void processBlock(const char* data, size_t length) override;
+
+	void finalize(hash_result_t* out) override;
 
 	unsigned int hashSize() const override;
+
+	ptr_t clone() const override;
+
+private:
+	boost::crc_32_type ctx_;
 };
 
 

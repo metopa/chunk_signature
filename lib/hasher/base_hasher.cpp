@@ -3,10 +3,12 @@
 #include <algorithm>
 #include <iterator>
 #include <map>
+#include <hasher/base_hasher.h>
+
 
 namespace {
-	std::map<std::string, std::function<BaseHasher::ptr_t()>>& getBackends() {
-		static std::map<std::string, std::function<BaseHasher::ptr_t()>> backends;
+	std::map<std::string, BaseHasher::ptr_t>& getBackends() {
+		static std::map<std::string, BaseHasher::ptr_t> backends;
 		return backends;
 	}
 }
@@ -18,14 +20,18 @@ std::vector<std::string> BaseHasher::getSupportedBackends() {
 	return names;
 }
 
-std::shared_ptr<BaseHasher> BaseHasher::getBackendByName(const std::string& name) {
+BaseHasher::ptr_t BaseHasher::getStaticBackendByName(const std::string& name) {
 	auto it = getBackends().find(name);
 	if (it == end(getBackends())) {
 		throw std::runtime_error("Unknown backend");
 	}
-	return it->second();
+	return it->second;
 }
 
-void BaseHasher::registerBackend(const std::string& name, const std::function<ptr_t()>& creator) {
-	getBackends()[name] = creator;
+BaseHasher::ptr_t BaseHasher::createBackendByName(const std::string& name) {
+	return getStaticBackendByName(name)->clone();
+}
+
+void BaseHasher::registerBackend(const std::string& name, const ptr_t& static_instance) {
+	getBackends()[name] = static_instance;
 }
