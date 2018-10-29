@@ -61,6 +61,7 @@ add_executable(signature
         src/result_writer/m_mapped_result_writer.cpp
         src/file_chunker.cpp
         src/thread_executor.cpp
+        src/prefetch_file_reader.cpp
         )
 target_link_libraries(signature
         ${Boost_LIBRARIES}
